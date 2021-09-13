@@ -20,7 +20,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/rode/new-collector-template/proto/v1alpha1"
+	"github.com/rode/collector-image-scanner/proto/v1alpha1"
 	pb "github.com/rode/rode/proto/v1alpha1"
 	"github.com/rode/rode/proto/v1alpha1fakes"
 	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/common_go_proto"
@@ -33,14 +33,14 @@ var _ = Describe("Server", func() {
 	var (
 		ctx        context.Context
 		rodeClient *v1alpha1fakes.FakeRodeClient
-		server     *NewCollectorTemplateServer
+		server     *collectorImageScannerServer
 	)
 
 	BeforeEach(func() {
 		ctx = context.Background()
 		rodeClient = &v1alpha1fakes.FakeRodeClient{}
 
-		server = NewNewCollectorTemplateServer(logger, rodeClient)
+		server = NewcollectorImageScannerServer(logger, rodeClient)
 	})
 
 	Describe("CreateEventOccurrence", func() {

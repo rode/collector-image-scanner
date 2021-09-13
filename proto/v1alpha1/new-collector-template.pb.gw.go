@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_NewCollectorTemplate_CreateEventOccurrence_0(ctx context.Context, marshaler runtime.Marshaler, client NewCollectorTemplateClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_CollectorImageScanner_CreateEventOccurrence_0(ctx context.Context, marshaler runtime.Marshaler, client CollectorImageScannerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq CreateEventOccurrenceRequest
 	var metadata runtime.ServerMetadata
 
@@ -48,7 +48,7 @@ func request_NewCollectorTemplate_CreateEventOccurrence_0(ctx context.Context, m
 
 }
 
-func local_request_NewCollectorTemplate_CreateEventOccurrence_0(ctx context.Context, marshaler runtime.Marshaler, server NewCollectorTemplateServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_CollectorImageScanner_CreateEventOccurrence_0(ctx context.Context, marshaler runtime.Marshaler, server CollectorImageScannerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq CreateEventOccurrenceRequest
 	var metadata runtime.ServerMetadata
 
@@ -65,24 +65,24 @@ func local_request_NewCollectorTemplate_CreateEventOccurrence_0(ctx context.Cont
 
 }
 
-// RegisterNewCollectorTemplateHandlerServer registers the http handlers for service NewCollectorTemplate to "mux".
-// UnaryRPC     :call NewCollectorTemplateServer directly.
+// RegisterCollectorImageScannerHandlerServer registers the http handlers for service CollectorImageScanner to "mux".
+// UnaryRPC     :call CollectorImageScannerServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterNewCollectorTemplateHandlerFromEndpoint instead.
-func RegisterNewCollectorTemplateHandlerServer(ctx context.Context, mux *runtime.ServeMux, server NewCollectorTemplateServer) error {
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterCollectorImageScannerHandlerFromEndpoint instead.
+func RegisterCollectorImageScannerHandlerServer(ctx context.Context, mux *runtime.ServeMux, server CollectorImageScannerServer) error {
 
-	mux.Handle("POST", pattern_NewCollectorTemplate_CreateEventOccurrence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_CollectorImageScanner_CreateEventOccurrence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/new_collector_template.v1alpha1.NewCollectorTemplate/CreateEventOccurrence")
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/collector_image_scanner.v1alpha1.CollectorImageScanner/CreateEventOccurrence", runtime.WithHTTPPathPattern("/v1alpha1/events"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_NewCollectorTemplate_CreateEventOccurrence_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_CollectorImageScanner_CreateEventOccurrence_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -90,16 +90,16 @@ func RegisterNewCollectorTemplateHandlerServer(ctx context.Context, mux *runtime
 			return
 		}
 
-		forward_NewCollectorTemplate_CreateEventOccurrence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_CollectorImageScanner_CreateEventOccurrence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterNewCollectorTemplateHandlerFromEndpoint is same as RegisterNewCollectorTemplateHandler but
+// RegisterCollectorImageScannerHandlerFromEndpoint is same as RegisterCollectorImageScannerHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterNewCollectorTemplateHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterCollectorImageScannerHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -119,39 +119,39 @@ func RegisterNewCollectorTemplateHandlerFromEndpoint(ctx context.Context, mux *r
 		}()
 	}()
 
-	return RegisterNewCollectorTemplateHandler(ctx, mux, conn)
+	return RegisterCollectorImageScannerHandler(ctx, mux, conn)
 }
 
-// RegisterNewCollectorTemplateHandler registers the http handlers for service NewCollectorTemplate to "mux".
+// RegisterCollectorImageScannerHandler registers the http handlers for service CollectorImageScanner to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterNewCollectorTemplateHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterNewCollectorTemplateHandlerClient(ctx, mux, NewNewCollectorTemplateClient(conn))
+func RegisterCollectorImageScannerHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterCollectorImageScannerHandlerClient(ctx, mux, NewCollectorImageScannerClient(conn))
 }
 
-// RegisterNewCollectorTemplateHandlerClient registers the http handlers for service NewCollectorTemplate
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "NewCollectorTemplateClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "NewCollectorTemplateClient"
+// RegisterCollectorImageScannerHandlerClient registers the http handlers for service CollectorImageScanner
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "CollectorImageScannerClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "CollectorImageScannerClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "NewCollectorTemplateClient" to call the correct interceptors.
-func RegisterNewCollectorTemplateHandlerClient(ctx context.Context, mux *runtime.ServeMux, client NewCollectorTemplateClient) error {
+// "CollectorImageScannerClient" to call the correct interceptors.
+func RegisterCollectorImageScannerHandlerClient(ctx context.Context, mux *runtime.ServeMux, client CollectorImageScannerClient) error {
 
-	mux.Handle("POST", pattern_NewCollectorTemplate_CreateEventOccurrence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_CollectorImageScanner_CreateEventOccurrence_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/new_collector_template.v1alpha1.NewCollectorTemplate/CreateEventOccurrence")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/collector_image_scanner.v1alpha1.CollectorImageScanner/CreateEventOccurrence", runtime.WithHTTPPathPattern("/v1alpha1/events"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_NewCollectorTemplate_CreateEventOccurrence_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_CollectorImageScanner_CreateEventOccurrence_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_NewCollectorTemplate_CreateEventOccurrence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_CollectorImageScanner_CreateEventOccurrence_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -159,9 +159,9 @@ func RegisterNewCollectorTemplateHandlerClient(ctx context.Context, mux *runtime
 }
 
 var (
-	pattern_NewCollectorTemplate_CreateEventOccurrence_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1alpha1", "events"}, ""))
+	pattern_CollectorImageScanner_CreateEventOccurrence_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1alpha1", "events"}, ""))
 )
 
 var (
-	forward_NewCollectorTemplate_CreateEventOccurrence_0 = runtime.ForwardResponseMessage
+	forward_CollectorImageScanner_CreateEventOccurrence_0 = runtime.ForwardResponseMessage
 )

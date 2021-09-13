@@ -4,8 +4,8 @@ GOFMT_FILES?=$$(find . -name '*.go' | grep -v proto)
 LICENSE_FILES=$$(find -E . -regex '.*\.(go|proto)')
 
 generate:
-	docker build ./scripts/generate -t ghcr.io/rode/new-collector-template/generate:latest
-	docker run -it --rm -v $$(pwd):/collector ghcr.io/rode/new-collector-template/generate:latest
+	docker build ./scripts/generate -t ghcr.io/rode/collector-image-scanner/generate:latest
+	docker run -it --rm -v $$(pwd):/collector ghcr.io/rode/collector-image-scanner/generate:latest
 
 fmtcheck:
 	lineCount=$(shell gofmt -l -s $(GOFMT_FILES) | wc -l | tr -d ' ') && exit $$lineCount
