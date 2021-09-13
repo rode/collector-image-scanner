@@ -1,4 +1,4 @@
-module github.com/rode/new-collector-template
+module github.com/rode/collector-image-scanner
 
 go 1.17
 

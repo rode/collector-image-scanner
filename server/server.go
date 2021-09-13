@@ -17,7 +17,7 @@ package server
 import (
 	"context"
 
-	"github.com/rode/new-collector-template/proto/v1alpha1"
+	"github.com/rode/collector-image-scanner/proto/v1alpha1"
 	pb "github.com/rode/rode/proto/v1alpha1"
 	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/build_go_proto"
 	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/common_go_proto"
@@ -31,23 +31,23 @@ import (
 )
 
 const (
-	rodeProjectId            = "projects/rode"
-	newCollectorTemplateNote = rodeProjectId + "/notes/new_collector_template"
+	rodeProjectId             = "projects/rode"
+	collectorImageScannerNote = rodeProjectId + "/notes/new_collector_template"
 )
 
-type NewCollectorTemplateServer struct {
+type collectorImageScannerServer struct {
 	logger *zap.Logger
 	rode   pb.RodeClient
 }
 
-func NewNewCollectorTemplateServer(logger *zap.Logger, rode pb.RodeClient) *NewCollectorTemplateServer {
-	return &NewCollectorTemplateServer{
+func NewcollectorImageScannerServer(logger *zap.Logger, rode pb.RodeClient) *collectorImageScannerServer {
+	return &collectorImageScannerServer{
 		logger,
 		rode,
 	}
 }
 
-func (s *NewCollectorTemplateServer) CreateEventOccurrence(ctx context.Context, request *v1alpha1.CreateEventOccurrenceRequest) (*v1alpha1.CreateEventOccurrenceResponse, error) {
+func (s *collectorImageScannerServer) CreateEventOccurrence(ctx context.Context, request *v1alpha1.CreateEventOccurrenceRequest) (*v1alpha1.CreateEventOccurrenceResponse, error) {
 	log := s.logger.Named("CreateEventOccurrence")
 
 	log.Debug("received request", zap.Any("request", request))
@@ -56,7 +56,7 @@ func (s *NewCollectorTemplateServer) CreateEventOccurrence(ctx context.Context, 
 		Resource: &grafeas_go_proto.Resource{
 			Uri: "git://github.com/rode/rode@bca0e1b89be42a61131b6de09fd2836e7b00c252",
 		},
-		NoteName: newCollectorTemplateNote,
+		NoteName: collectorImageScannerNote,
 		Kind:     common_go_proto.NoteKind_BUILD,
 		Details: &grafeas_go_proto.Occurrence_Build{
 			Build: &build_go_proto.Details{

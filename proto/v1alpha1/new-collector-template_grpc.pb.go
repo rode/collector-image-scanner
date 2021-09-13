@@ -14,84 +14,84 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// NewCollectorTemplateClient is the client API for NewCollectorTemplate service.
+// CollectorImageScannerClient is the client API for CollectorImageScanner service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type NewCollectorTemplateClient interface {
+type CollectorImageScannerClient interface {
 	CreateEventOccurrence(ctx context.Context, in *CreateEventOccurrenceRequest, opts ...grpc.CallOption) (*CreateEventOccurrenceResponse, error)
 }
 
-type newCollectorTemplateClient struct {
+type collectorImageScannerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewNewCollectorTemplateClient(cc grpc.ClientConnInterface) NewCollectorTemplateClient {
-	return &newCollectorTemplateClient{cc}
+func NewCollectorImageScannerClient(cc grpc.ClientConnInterface) CollectorImageScannerClient {
+	return &collectorImageScannerClient{cc}
 }
 
-func (c *newCollectorTemplateClient) CreateEventOccurrence(ctx context.Context, in *CreateEventOccurrenceRequest, opts ...grpc.CallOption) (*CreateEventOccurrenceResponse, error) {
+func (c *collectorImageScannerClient) CreateEventOccurrence(ctx context.Context, in *CreateEventOccurrenceRequest, opts ...grpc.CallOption) (*CreateEventOccurrenceResponse, error) {
 	out := new(CreateEventOccurrenceResponse)
-	err := c.cc.Invoke(ctx, "/new_collector_template.v1alpha1.NewCollectorTemplate/CreateEventOccurrence", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/collector_image_scanner.v1alpha1.collectorImageScanner/CreateEventOccurrence", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// NewCollectorTemplateServer is the server API for NewCollectorTemplate service.
-// All implementations should embed UnimplementedNewCollectorTemplateServer
+// CollectorImageScannerServer is the server API for CollectorImageScanner service.
+// All implementations should embed UnimplementedCollectorImageScannerServer
 // for forward compatibility
-type NewCollectorTemplateServer interface {
+type CollectorImageScannerServer interface {
 	CreateEventOccurrence(context.Context, *CreateEventOccurrenceRequest) (*CreateEventOccurrenceResponse, error)
 }
 
-// UnimplementedNewCollectorTemplateServer should be embedded to have forward compatible implementations.
-type UnimplementedNewCollectorTemplateServer struct {
+// UnimplementedCollectorImageScannerServer should be embedded to have forward compatible implementations.
+type UnimplementedCollectorImageScannerServer struct {
 }
 
-func (UnimplementedNewCollectorTemplateServer) CreateEventOccurrence(context.Context, *CreateEventOccurrenceRequest) (*CreateEventOccurrenceResponse, error) {
+func (UnimplementedCollectorImageScannerServer) CreateEventOccurrence(context.Context, *CreateEventOccurrenceRequest) (*CreateEventOccurrenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateEventOccurrence not implemented")
 }
 
-// UnsafeNewCollectorTemplateServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to NewCollectorTemplateServer will
+// UnsafeCollectorImageScannerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CollectorImageScannerServer will
 // result in compilation errors.
-type UnsafeNewCollectorTemplateServer interface {
-	mustEmbedUnimplementedNewCollectorTemplateServer()
+type UnsafeCollectorImageScannerServer interface {
+	mustEmbedUnimplementedCollectorImageScannerServer()
 }
 
-func RegisterNewCollectorTemplateServer(s grpc.ServiceRegistrar, srv NewCollectorTemplateServer) {
-	s.RegisterService(&NewCollectorTemplate_ServiceDesc, srv)
+func RegisterCollectorImageScannerServer(s grpc.ServiceRegistrar, srv CollectorImageScannerServer) {
+	s.RegisterService(&CollectorImageScanner_ServiceDesc, srv)
 }
 
-func _NewCollectorTemplate_CreateEventOccurrence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _CollectorImageScanner_CreateEventOccurrence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateEventOccurrenceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NewCollectorTemplateServer).CreateEventOccurrence(ctx, in)
+		return srv.(CollectorImageScannerServer).CreateEventOccurrence(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/new_collector_template.v1alpha1.NewCollectorTemplate/CreateEventOccurrence",
+		FullMethod: "/collector_image_scanner.v1alpha1.collectorImageScanner/CreateEventOccurrence",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NewCollectorTemplateServer).CreateEventOccurrence(ctx, req.(*CreateEventOccurrenceRequest))
+		return srv.(CollectorImageScannerServer).CreateEventOccurrence(ctx, req.(*CreateEventOccurrenceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// NewCollectorTemplate_ServiceDesc is the grpc.ServiceDesc for NewCollectorTemplate service.
+// CollectorImageScanner_ServiceDesc is the grpc.ServiceDesc for CollectorImageScanner service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var NewCollectorTemplate_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "new_collector_template.v1alpha1.NewCollectorTemplate",
-	HandlerType: (*NewCollectorTemplateServer)(nil),
+var CollectorImageScanner_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "collector_image_scanner.v1alpha1.collectorImageScanner",
+	HandlerType: (*CollectorImageScannerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "CreateEventOccurrence",
-			Handler:    _NewCollectorTemplate_CreateEventOccurrence_Handler,
+			Handler:    _CollectorImageScanner_CreateEventOccurrence_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

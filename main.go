@@ -29,14 +29,14 @@ import (
 	"github.com/soheilhy/cmux"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/rode/new-collector-template/proto/v1alpha1"
-	"github.com/rode/new-collector-template/server"
+	"github.com/rode/collector-image-scanner/proto/v1alpha1"
+	"github.com/rode/collector-image-scanner/server"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/rode/new-collector-template/config"
+	"github.com/rode/collector-image-scanner/config"
 )
 
 func main() {
@@ -66,8 +66,8 @@ func main() {
 		reflection.Register(grpcServer)
 	}
 
-	collectorServer := server.NewNewCollectorTemplateServer(logger, rodeClient)
-	v1alpha1.RegisterNewCollectorTemplateServer(grpcServer, collectorServer)
+	collectorServer := server.NewcollectorImageScannerServer(logger, rodeClient)
+	v1alpha1.RegisterCollectorImageScannerServer(grpcServer, collectorServer)
 
 	healthzServer := server.NewHealthzServer(logger.Named("healthz"))
 	grpc_health_v1.RegisterHealthServer(grpcServer, healthzServer)
@@ -124,7 +124,7 @@ func createGrpcGateway(ctx context.Context, grpcAddress string) (http.Handler, e
 		log.Fatalln("Failed to dial server:", err)
 	}
 	gwmux := runtime.NewServeMux()
-	if err := v1alpha1.RegisterNewCollectorTemplateHandler(ctx, gwmux, conn); err != nil {
+	if err := v1alpha1.RegisterCollectorImageScannerHandler(ctx, gwmux, conn); err != nil {
 		return nil, err
 	}
 

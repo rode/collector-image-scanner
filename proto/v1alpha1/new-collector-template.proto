@@ -14,13 +14,13 @@
 
 syntax = "proto3";
 
-package new_collector_template.v1alpha1;
+package collector_image_scanner.v1alpha1;
 
-option go_package = "github.com/rode/new-collector-template/proto/v1alpha1";
+option go_package = "github.com/rode/collector-image-scanner/proto/v1alpha1";
 
 import "google/api/annotations.proto";
 
-service NewCollectorTemplate {
+service collectorImageScanner {
   rpc CreateEventOccurrence(CreateEventOccurrenceRequest) returns (CreateEventOccurrenceResponse) {
     option (google.api.http) = {
       post: "/v1alpha1/events"
