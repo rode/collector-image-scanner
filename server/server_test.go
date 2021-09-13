@@ -40,7 +40,7 @@ var _ = Describe("Server", func() {
 		ctx = context.Background()
 		rodeClient = &v1alpha1fakes.FakeRodeClient{}
 
-		server = NewcollectorImageScannerServer(logger, rodeClient)
+		server = NewCollectorImageScannerServer(logger, rodeClient)
 	})
 
 	Describe("CreateEventOccurrence", func() {

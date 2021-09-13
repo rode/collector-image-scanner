@@ -19,20 +19,17 @@ package collector_image_scanner.v1alpha1;
 option go_package = "github.com/rode/collector-image-scanner/proto/v1alpha1";
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
-service collectorImageScanner {
-  rpc CreateEventOccurrence(CreateEventOccurrenceRequest) returns (CreateEventOccurrenceResponse) {
+service CollectorImageScanner {
+  rpc StartImageScan(CreateImageScanRequest) returns (google.protobuf.Empty){
     option (google.api.http) = {
-      post: "/v1alpha1/events"
+      post: "/v1alpha1/scan"
       body: "*"
     };
   }
 }
 
-message CreateEventOccurrenceRequest {
-  string name = 1;
-}
-
-message CreateEventOccurrenceResponse {
-  string id = 2;
+message CreateImageScanRequest {
+  string image_uri = 1;
 }

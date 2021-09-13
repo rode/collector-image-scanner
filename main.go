@@ -66,7 +66,8 @@ func main() {
 		reflection.Register(grpcServer)
 	}
 
-	collectorServer := server.NewcollectorImageScannerServer(logger, rodeClient)
+	imageScanner := server.NewImageScanner(logger, rodeClient)
+	collectorServer := server.NewCollectorImageScannerServer(logger, imageScanner)
 	v1alpha1.RegisterCollectorImageScannerServer(grpcServer, collectorServer)
 
 	healthzServer := server.NewHealthzServer(logger.Named("healthz"))
