@@ -42,7 +42,13 @@ func NewImageScanner(logger *zap.Logger, client rode.RodeClient) ImageScanner {
 }
 
 func (t *trivyImageScanner) Init() error {
-	// TODO: run trivy image --download-db-only
+	t.logger.Info("Downloading Trivy Vulnerability DB")
+	err := exec.Command("trivy", "image", "--download-db-only").Run()
+	if err != nil {
+		return err
+	}
+	t.logger.Info("Done")
+
 	version, err := exec.Command("trivy", "--version", "-f", "json").Output()
 	if err != nil {
 		return err
@@ -154,7 +160,7 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 
 			for _, url := range vuln.References {
 				relatedUrls = append(relatedUrls, &common_go_proto.RelatedUrl{
-					Url:   url,
+					Url: url,
 				})
 			}
 
@@ -171,7 +177,7 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 						EffectiveSeverity: vulnerability_go_proto.Severity(vulnerability_go_proto.Severity_value[strings.ToUpper(vuln.Severity)]),
 						ShortDescription:  vuln.Description,
 						RelatedUrls:       relatedUrls,
-						PackageIssue:      []*vulnerability_go_proto.PackageIssue{
+						PackageIssue: []*vulnerability_go_proto.PackageIssue{
 							{
 								AffectedLocation: &vulnerability_go_proto.VulnerabilityLocation{
 									CpeUri:  fmt.Sprintf("https://nvd.nist.gov/vuln/detail/%s", vuln.VulnerabilityID),
