@@ -26,11 +26,14 @@ COPY proto proto
 # Build
 RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o collector
 
+FROM ghcr.io/aquasecurity/trivy:0.19.2 as trivy
+
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot as runner
 WORKDIR /
-COPY --from=builder /workspace/collector .
+COPY --from=trivy /usr/local/bin/trivy /bin/
+COPY --from=builder /workspace/collector /bin/
 COPY --from=builder /bin/grpc_health_probe .
 USER nonroot:nonroot
 
-ENTRYPOINT ["./collector"]
+ENTRYPOINT ["collector"]
