@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/aquasecurity/trivy v0.19.2
 	github.com/brianvoe/gofakeit/v6 v6.4.1
+	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.6.0
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.12.0
@@ -30,7 +31,6 @@ require (
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
