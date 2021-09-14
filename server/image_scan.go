@@ -197,4 +197,6 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 		log.Error("Error creating occurrences in Rode", zap.Error(err))
 		return
 	}
+
+	log.Info("Successfully created occurrences in Rode")
 }
