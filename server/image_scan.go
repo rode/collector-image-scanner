@@ -205,4 +205,6 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 	}
 
 	log.Info("Successfully created occurrences in Rode")
+
+	// TODO: Clear Trivy cache occasionally
 }
