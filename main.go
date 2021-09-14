@@ -66,8 +66,11 @@ func main() {
 		reflection.Register(grpcServer)
 	}
 
-	imageScanner := server.NewImageScanner(logger, rodeClient)
-	collectorServer := server.NewCollectorImageScannerServer(logger, imageScanner)
+	imageScanner := server.NewImageScanner(logger.Named("ImageScanner"), rodeClient)
+	if err := imageScanner.Init(); err != nil {
+		log.Fatalf("Error initializing image scanner: %v", err)
+	}
+	collectorServer := server.NewCollectorImageScannerServer(logger.Named("Server"), imageScanner)
 	v1alpha1.RegisterCollectorImageScannerServer(grpcServer, collectorServer)
 
 	healthzServer := server.NewHealthzServer(logger.Named("healthz"))
