@@ -71,8 +71,9 @@ func (t *trivyCommand) Scan(imageUri string) (*ScanOutput, error) {
 	scanResult := &ScanOutput{}
 
 	scanResult.ScanStart = time.Now()
-	output, err := t.runCmd("--quiet", "image", "--format", "json", "--no-progress", imageUri)
+	output, err := t.runCmd("--quiet", "client", "--format", "json", imageUri)
 	scanResult.ScanEnd = time.Now()
+
 	if err != nil {
 		return nil, fmt.Errorf("error running image scan: %v", err)
 	}
