@@ -16,34 +16,31 @@ package server
 
 import (
 	"context"
+	"regexp"
+
 	"github.com/rode/collector-image-scanner/proto/v1alpha1"
+	"github.com/rode/collector-image-scanner/scanner"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"regexp"
 )
 
 var imageUriPattern = regexp.MustCompile("(?P<name>.+)(@sha256:)(?P<version>.+)")
 
-const (
-	rodeProjectId             = "projects/rode"
-	collectorImageScannerNote = rodeProjectId + "/notes/collector_image_scanner"
-)
-
 type collectorImageScannerServer struct {
 	logger  *zap.Logger
-	scanner ImageScanner
+	scanner scanner.ImageScanner
 }
 
-func NewCollectorImageScannerServer(logger *zap.Logger, scanner ImageScanner) *collectorImageScannerServer {
+func NewCollectorImageScannerServer(logger *zap.Logger, scanner scanner.ImageScanner) *collectorImageScannerServer {
 	return &collectorImageScannerServer{
 		logger,
 		scanner,
 	}
 }
 
-func (s *collectorImageScannerServer) StartImageScan(ctx context.Context, request *v1alpha1.CreateImageScanRequest) (*emptypb.Empty, error) {
+func (s *collectorImageScannerServer) StartImageScan(_ context.Context, request *v1alpha1.CreateImageScanRequest) (*emptypb.Empty, error) {
 	if !imageUriPattern.MatchString(request.ImageUri) {
 		return nil, status.Errorf(codes.InvalidArgument, "Invalid Image URI")
 	}

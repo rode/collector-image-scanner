@@ -21,6 +21,7 @@ RUN go mod download
 COPY main.go main.go
 COPY config config
 COPY server server
+COPY scanner scanner
 COPY proto proto
 
 # Build

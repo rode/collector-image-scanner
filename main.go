@@ -25,6 +25,7 @@ import (
 	"syscall"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rode/collector-image-scanner/scanner/trivy"
 	"github.com/rode/rode/common"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/sync/errgroup"
@@ -66,7 +67,7 @@ func main() {
 		reflection.Register(grpcServer)
 	}
 
-	imageScanner := server.NewImageScanner(logger.Named("ImageScanner"), rodeClient)
+	imageScanner := trivy.NewImageScanner(logger.Named("TrivyImageScanner"), rodeClient)
 	if err := imageScanner.Init(); err != nil {
 		log.Fatalf("Error initializing image scanner: %v", err)
 	}

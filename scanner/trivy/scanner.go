@@ -11,21 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-package server
+package trivy
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"os"
-	"os/exec"
 	"strings"
-	"time"
 
-	"github.com/aquasecurity/trivy/pkg/report"
 	"github.com/google/uuid"
+	"github.com/rode/collector-image-scanner/scanner"
 	rode "github.com/rode/rode/proto/v1alpha1"
 	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/common_go_proto"
 	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/discovery_go_proto"
@@ -37,43 +31,34 @@ import (
 )
 
 type trivyImageScanner struct {
-	logger *zap.Logger
-	rode   rode.RodeClient
-	trivy  *trivyVersion
+	logger  *zap.Logger
+	rode    rode.RodeClient
+	trivy   *trivyCommand
+	version string
 }
 
-type ImageScanner interface {
-	ImageScan(string)
-	Init() error
-}
-
-type trivyVersion struct {
-	Version string
-}
-
-func NewImageScanner(logger *zap.Logger, client rode.RodeClient) ImageScanner {
-	return &trivyImageScanner{logger: logger, rode: client}
+func NewImageScanner(logger *zap.Logger, client rode.RodeClient) scanner.ImageScanner {
+	return &trivyImageScanner{
+		logger: logger,
+		rode:   client,
+		trivy:  &trivyCommand{},
+	}
 }
 
 func (t *trivyImageScanner) Init() error {
 	t.logger.Info("Downloading Trivy Vulnerability DB")
-	err := exec.Command("trivy", "image", "--download-db-only").Run()
+	if err := t.trivy.DownloadVulnerabilityDatabase(); err != nil {
+		return err
+	}
+	t.logger.Info("Successfully downloaded Trivy database")
+
+	t.logger.Info("Discovering Trivy version")
+	version, err := t.trivy.Version()
 	if err != nil {
 		return err
 	}
-	t.logger.Info("Done")
-
-	version, err := exec.Command("trivy", "--version", "-f", "json").Output()
-	if err != nil {
-		return err
-	}
-	var trivy trivyVersion
-	if err := json.Unmarshal(version, &trivy); err != nil {
-		return err
-	}
-
-	t.trivy = &trivy
-
+	t.logger.Info("Found Trivy version", zap.String("version", version.Version))
+	t.version = version.Version
 	return nil
 }
 
@@ -81,35 +66,43 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 	log := t.logger.Named("ImageScan").With(zap.String("imageUri", imageUri))
 	log.Info("Starting scan")
 
-	cmd := exec.Command("trivy", "--quiet", "image", "--format", "json", "--no-progress", imageUri)
-	cmd.Env = append(os.Environ(), "TRIVY_NEW_JSON_SCHEMA=true")
-	var stdOut bytes.Buffer
-	var stdErr bytes.Buffer
-	cmd.Stdout = &stdOut
-	cmd.Stderr = &stdErr
-	scanStart := time.Now()
-	err := cmd.Run()
-	scanEnd := time.Now()
-
-	log.Debug("Scan completed", zap.Duration("scan", scanEnd.Sub(scanStart)))
+	results, err := t.trivy.Scan(imageUri)
 	if err != nil {
-		log.With(zap.String("stderr", stdErr.String())).Error("Error scanning image", zap.Error(err))
+		log.Error("Error scanning image", zap.Error(err))
 		return
 	}
+	log.Debug("Scan completed", zap.Duration("scan", results.scanEnd.Sub(results.scanStart)))
 
-	var scanReport report.Report
-	err = json.Unmarshal(stdOut.Bytes(), &scanReport)
-	if err != nil {
-		log.Error("Error unmarshalling scan report", zap.Error(err))
-		return
-	}
-
-	reportId := uuid.New()
 	ctx := context.Background()
+	noteName, err := t.createScanNote(ctx, imageUri)
+	if err != nil {
+		log.Error("Error creating scan note", zap.Error(err))
+		return
+	}
+	log.Info("Created scan note", zap.String("noteName", noteName))
+	discoveryOccurrences := t.createDiscoveryOccurrences(noteName, imageUri, results)
+	vulnerabilityOccurrences := t.createVulnerabilityOccurrences(noteName, imageUri, results)
+
+	_, err = t.rode.BatchCreateOccurrences(ctx, &rode.BatchCreateOccurrencesRequest{
+		Occurrences: append(discoveryOccurrences, vulnerabilityOccurrences...),
+	})
+
+	if err != nil {
+		log.Error("Error creating occurrences in Rode", zap.Error(err))
+		return
+	}
+
+	log.Info("Successfully created occurrences in Rode")
+
+	// TODO: Clear Trivy cache occasionally
+}
+
+func (t *trivyImageScanner) createScanNote(ctx context.Context, imageUri string) (string, error) {
+	reportId := uuid.New()
 	response, err := t.rode.CreateNote(ctx, &rode.CreateNoteRequest{
 		Note: &grafeas_go_proto.Note{
 			ShortDescription: "Image Scanner Collector Vulnerability Scan",
-			LongDescription:  fmt.Sprintf("Image Scanner Collector Vulnerability Scan by Trivy (%s)", t.trivy.Version),
+			LongDescription:  fmt.Sprintf("Image Scanner Collector Vulnerability Scan by Trivy (%s)", t.version),
 			Kind:             common_go_proto.NoteKind_DISCOVERY,
 			RelatedUrl: []*common_go_proto.RelatedUrl{
 				{
@@ -127,20 +120,21 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 	})
 
 	if err != nil {
-		log.Error("Error creating scan note", zap.Error(err))
-		return
+		return "", err
 	}
 
-	log.Info("noteName", zap.String("noteName", response.Name))
-	noteName := response.Name
-	discoveryOccurrences := []*grafeas_go_proto.Occurrence{
+	return response.Name, nil
+}
+
+func (t *trivyImageScanner) createDiscoveryOccurrences(noteName, imageUri string, results *scanOutput) []*grafeas_go_proto.Occurrence {
+	return []*grafeas_go_proto.Occurrence{
 		{
 			Resource: &grafeas_go_proto.Resource{
 				Uri: imageUri,
 			},
 			NoteName:   noteName,
 			Kind:       common_go_proto.NoteKind_DISCOVERY,
-			CreateTime: timestamppb.New(scanStart),
+			CreateTime: timestamppb.New(results.scanStart),
 			Details: &grafeas_go_proto.Occurrence_Discovered{
 				Discovered: &discovery_go_proto.Details{
 					Discovered: &discovery_go_proto.Discovered{
@@ -155,7 +149,7 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 			},
 			NoteName:   noteName,
 			Kind:       common_go_proto.NoteKind_DISCOVERY,
-			CreateTime: timestamppb.New(scanEnd),
+			CreateTime: timestamppb.New(results.scanEnd),
 			Details: &grafeas_go_proto.Occurrence_Discovered{
 				Discovered: &discovery_go_proto.Details{
 					Discovered: &discovery_go_proto.Discovered{
@@ -165,10 +159,12 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 			},
 		},
 	}
+}
 
+func (t *trivyImageScanner) createVulnerabilityOccurrences(noteName, imageUri string, results *scanOutput) []*grafeas_go_proto.Occurrence {
 	vulns := []*grafeas_go_proto.Occurrence{}
 
-	for _, result := range scanReport.Results {
+	for _, result := range results.trivyReport.Results {
 		for _, vuln := range result.Vulnerabilities {
 			relatedUrls := []*common_go_proto.RelatedUrl{}
 
@@ -209,16 +205,5 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 		}
 	}
 
-	_, err = t.rode.BatchCreateOccurrences(ctx, &rode.BatchCreateOccurrencesRequest{
-		Occurrences: append(discoveryOccurrences, vulns...),
-	})
-
-	if err != nil {
-		log.Error("Error creating occurrences in Rode", zap.Error(err))
-		return
-	}
-
-	log.Info("Successfully created occurrences in Rode")
-
-	// TODO: Clear Trivy cache occasionally
+	return vulns
 }
