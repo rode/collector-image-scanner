@@ -26,11 +26,13 @@ require (
 	github.com/aquasecurity/fanal v0.0.0-20210719144537-c73c1e9f21bf // indirect
 	github.com/aquasecurity/go-dep-parser v0.0.0-20210520015931-0dd56983cc62 // indirect
 	github.com/aquasecurity/trivy-db v0.0.0-20210531102723-aaab62dec6ee // indirect
+	github.com/bmatcuk/doublestar/v4 v4.0.2 // indirect
 	github.com/caarlos0/env/v6 v6.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/addlicense v1.0.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
