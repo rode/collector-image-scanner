@@ -67,7 +67,7 @@ func main() {
 		reflection.Register(grpcServer)
 	}
 
-	imageScanner := trivy.NewImageScanner(logger.Named("TrivyImageScanner"), rodeClient)
+	imageScanner := trivy.NewImageScanner(logger.Named("TrivyImageScanner"), rodeClient, trivy.NewTrivyCommandWrapper())
 	if err := imageScanner.Init(); err != nil {
 		log.Fatalf("Error initializing image scanner: %v", err)
 	}

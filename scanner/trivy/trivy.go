@@ -25,9 +25,17 @@ import (
 	"github.com/aquasecurity/trivy/pkg/report"
 )
 
+//go:generate counterfeiter -generate
+
+//counterfeiter:generate . CommandWrapper
+type CommandWrapper interface {
+	Version() (*Version, error)
+	Scan(imageUri string) (*ScanOutput, error)
+}
+
 type trivyCommand struct{}
 
-type trivyVersion struct {
+type Version struct {
 	Version string
 }
 
@@ -36,18 +44,22 @@ type cmdOutput struct {
 	stdErr bytes.Buffer
 }
 
-type scanOutput struct {
-	trivyReport *report.Report
-	scanStart   time.Time
-	scanEnd     time.Time
+type ScanOutput struct {
+	Report    *report.Report
+	ScanStart time.Time
+	ScanEnd   time.Time
 }
 
-func (t *trivyCommand) Version() (*trivyVersion, error) {
+func NewTrivyCommandWrapper() CommandWrapper {
+	return &trivyCommand{}
+}
+
+func (t *trivyCommand) Version() (*Version, error) {
 	output, err := t.runCmd("--version", "-f", "json")
 	if err != nil {
 		return nil, fmt.Errorf("error checking Trivy version: %v", err)
 	}
-	var version trivyVersion
+	var version Version
 	if err = json.Unmarshal(output.stdOut.Bytes(), &version); err != nil {
 		return nil, fmt.Errorf("error unmarshalling version information: %v", err)
 	}
@@ -55,21 +67,12 @@ func (t *trivyCommand) Version() (*trivyVersion, error) {
 	return &version, nil
 }
 
-func (t *trivyCommand) DownloadVulnerabilityDatabase() error {
-	_, err := t.runCmd("image", "--download-db-only")
-	if err != nil {
-		return fmt.Errorf("error downloading vulnerability database: %v", err)
-	}
+func (t *trivyCommand) Scan(imageUri string) (*ScanOutput, error) {
+	scanResult := &ScanOutput{}
 
-	return nil
-}
-
-func (t *trivyCommand) Scan(imageUri string) (*scanOutput, error) {
-	scanResult := &scanOutput{}
-
-	scanResult.scanStart = time.Now()
+	scanResult.ScanStart = time.Now()
 	output, err := t.runCmd("--quiet", "image", "--format", "json", "--no-progress", imageUri)
-	scanResult.scanEnd = time.Now()
+	scanResult.ScanEnd = time.Now()
 	if err != nil {
 		return nil, fmt.Errorf("error running image scan: %v", err)
 	}
@@ -78,7 +81,7 @@ func (t *trivyCommand) Scan(imageUri string) (*scanOutput, error) {
 	if err = json.Unmarshal(output.stdOut.Bytes(), &scanReport); err != nil {
 		return nil, fmt.Errorf("error unmarshalling report: %v", err)
 	}
-	scanResult.trivyReport = &scanReport
+	scanResult.Report = &scanReport
 
 	return scanResult, nil
 }

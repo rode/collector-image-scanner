@@ -33,25 +33,19 @@ import (
 type trivyImageScanner struct {
 	logger  *zap.Logger
 	rode    rode.RodeClient
-	trivy   *trivyCommand
+	trivy   CommandWrapper
 	version string
 }
 
-func NewImageScanner(logger *zap.Logger, client rode.RodeClient) scanner.ImageScanner {
+func NewImageScanner(logger *zap.Logger, client rode.RodeClient, trivyWrapper CommandWrapper) scanner.ImageScanner {
 	return &trivyImageScanner{
 		logger: logger,
 		rode:   client,
-		trivy:  &trivyCommand{},
+		trivy:  trivyWrapper,
 	}
 }
 
 func (t *trivyImageScanner) Init() error {
-	t.logger.Info("Downloading Trivy Vulnerability DB")
-	if err := t.trivy.DownloadVulnerabilityDatabase(); err != nil {
-		return err
-	}
-	t.logger.Info("Successfully downloaded Trivy database")
-
 	t.logger.Info("Discovering Trivy version")
 	version, err := t.trivy.Version()
 	if err != nil {
@@ -71,7 +65,7 @@ func (t *trivyImageScanner) ImageScan(imageUri string) {
 		log.Error("Error scanning image", zap.Error(err))
 		return
 	}
-	log.Debug("Scan completed", zap.Duration("scan", results.scanEnd.Sub(results.scanStart)))
+	log.Debug("Scan completed", zap.Duration("scan", results.ScanEnd.Sub(results.ScanStart)))
 
 	ctx := context.Background()
 	noteName, err := t.createScanNote(ctx, imageUri)
@@ -126,7 +120,7 @@ func (t *trivyImageScanner) createScanNote(ctx context.Context, imageUri string)
 	return response.Name, nil
 }
 
-func (t *trivyImageScanner) createDiscoveryOccurrences(noteName, imageUri string, results *scanOutput) []*grafeas_go_proto.Occurrence {
+func (t *trivyImageScanner) createDiscoveryOccurrences(noteName, imageUri string, results *ScanOutput) []*grafeas_go_proto.Occurrence {
 	return []*grafeas_go_proto.Occurrence{
 		{
 			Resource: &grafeas_go_proto.Resource{
@@ -134,7 +128,7 @@ func (t *trivyImageScanner) createDiscoveryOccurrences(noteName, imageUri string
 			},
 			NoteName:   noteName,
 			Kind:       common_go_proto.NoteKind_DISCOVERY,
-			CreateTime: timestamppb.New(results.scanStart),
+			CreateTime: timestamppb.New(results.ScanStart),
 			Details: &grafeas_go_proto.Occurrence_Discovered{
 				Discovered: &discovery_go_proto.Details{
 					Discovered: &discovery_go_proto.Discovered{
@@ -149,7 +143,7 @@ func (t *trivyImageScanner) createDiscoveryOccurrences(noteName, imageUri string
 			},
 			NoteName:   noteName,
 			Kind:       common_go_proto.NoteKind_DISCOVERY,
-			CreateTime: timestamppb.New(results.scanEnd),
+			CreateTime: timestamppb.New(results.ScanEnd),
 			Details: &grafeas_go_proto.Occurrence_Discovered{
 				Discovered: &discovery_go_proto.Details{
 					Discovered: &discovery_go_proto.Discovered{
@@ -161,10 +155,10 @@ func (t *trivyImageScanner) createDiscoveryOccurrences(noteName, imageUri string
 	}
 }
 
-func (t *trivyImageScanner) createVulnerabilityOccurrences(noteName, imageUri string, results *scanOutput) []*grafeas_go_proto.Occurrence {
+func (t *trivyImageScanner) createVulnerabilityOccurrences(noteName, imageUri string, results *ScanOutput) []*grafeas_go_proto.Occurrence {
 	vulns := []*grafeas_go_proto.Occurrence{}
 
-	for _, result := range results.trivyReport.Results {
+	for _, result := range results.Report.Results {
 		for _, vuln := range result.Vulnerabilities {
 			relatedUrls := []*common_go_proto.RelatedUrl{}
 
