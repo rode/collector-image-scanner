@@ -12,27 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto3";
+package scanner
 
-package collector_image_scanner.v1alpha1;
+import "context"
 
-option go_package = "github.com/rode/collector-image-scanner/proto/v1alpha1";
+//go:generate counterfeiter -generate
 
-import "google/api/annotations.proto";
-
-service collectorImageScanner {
-  rpc CreateEventOccurrence(CreateEventOccurrenceRequest) returns (CreateEventOccurrenceResponse) {
-    option (google.api.http) = {
-      post: "/v1alpha1/events"
-      body: "*"
-    };
-  }
-}
-
-message CreateEventOccurrenceRequest {
-  string name = 1;
-}
-
-message CreateEventOccurrenceResponse {
-  string id = 2;
+//counterfeiter:generate . ImageScanner
+type ImageScanner interface {
+	ImageScan(string, context.Context)
+	Init() error
 }

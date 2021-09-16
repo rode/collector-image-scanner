@@ -7,6 +7,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -18,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CollectorImageScannerClient interface {
-	CreateEventOccurrence(ctx context.Context, in *CreateEventOccurrenceRequest, opts ...grpc.CallOption) (*CreateEventOccurrenceResponse, error)
+	StartImageScan(ctx context.Context, in *CreateImageScanRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type collectorImageScannerClient struct {
@@ -29,9 +30,9 @@ func NewCollectorImageScannerClient(cc grpc.ClientConnInterface) CollectorImageS
 	return &collectorImageScannerClient{cc}
 }
 
-func (c *collectorImageScannerClient) CreateEventOccurrence(ctx context.Context, in *CreateEventOccurrenceRequest, opts ...grpc.CallOption) (*CreateEventOccurrenceResponse, error) {
-	out := new(CreateEventOccurrenceResponse)
-	err := c.cc.Invoke(ctx, "/collector_image_scanner.v1alpha1.collectorImageScanner/CreateEventOccurrence", in, out, opts...)
+func (c *collectorImageScannerClient) StartImageScan(ctx context.Context, in *CreateImageScanRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/collector_image_scanner.v1alpha1.CollectorImageScanner/StartImageScan", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,15 +43,15 @@ func (c *collectorImageScannerClient) CreateEventOccurrence(ctx context.Context,
 // All implementations should embed UnimplementedCollectorImageScannerServer
 // for forward compatibility
 type CollectorImageScannerServer interface {
-	CreateEventOccurrence(context.Context, *CreateEventOccurrenceRequest) (*CreateEventOccurrenceResponse, error)
+	StartImageScan(context.Context, *CreateImageScanRequest) (*emptypb.Empty, error)
 }
 
 // UnimplementedCollectorImageScannerServer should be embedded to have forward compatible implementations.
 type UnimplementedCollectorImageScannerServer struct {
 }
 
-func (UnimplementedCollectorImageScannerServer) CreateEventOccurrence(context.Context, *CreateEventOccurrenceRequest) (*CreateEventOccurrenceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateEventOccurrence not implemented")
+func (UnimplementedCollectorImageScannerServer) StartImageScan(context.Context, *CreateImageScanRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartImageScan not implemented")
 }
 
 // UnsafeCollectorImageScannerServer may be embedded to opt out of forward compatibility for this service.
@@ -64,20 +65,20 @@ func RegisterCollectorImageScannerServer(s grpc.ServiceRegistrar, srv CollectorI
 	s.RegisterService(&CollectorImageScanner_ServiceDesc, srv)
 }
 
-func _CollectorImageScanner_CreateEventOccurrence_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateEventOccurrenceRequest)
+func _CollectorImageScanner_StartImageScan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateImageScanRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CollectorImageScannerServer).CreateEventOccurrence(ctx, in)
+		return srv.(CollectorImageScannerServer).StartImageScan(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/collector_image_scanner.v1alpha1.collectorImageScanner/CreateEventOccurrence",
+		FullMethod: "/collector_image_scanner.v1alpha1.CollectorImageScanner/StartImageScan",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CollectorImageScannerServer).CreateEventOccurrence(ctx, req.(*CreateEventOccurrenceRequest))
+		return srv.(CollectorImageScannerServer).StartImageScan(ctx, req.(*CreateImageScanRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -86,14 +87,14 @@ func _CollectorImageScanner_CreateEventOccurrence_Handler(srv interface{}, ctx c
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CollectorImageScanner_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "collector_image_scanner.v1alpha1.collectorImageScanner",
+	ServiceName: "collector_image_scanner.v1alpha1.CollectorImageScanner",
 	HandlerType: (*CollectorImageScannerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateEventOccurrence",
-			Handler:    _CollectorImageScanner_CreateEventOccurrence_Handler,
+			MethodName: "StartImageScan",
+			Handler:    _CollectorImageScanner_StartImageScan_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/v1alpha1/new-collector-template.proto",
+	Metadata: "proto/v1alpha1/collector_image_scanner.proto",
 }

@@ -16,80 +16,36 @@ package server
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/rode/collector-image-scanner/proto/v1alpha1"
-	pb "github.com/rode/rode/proto/v1alpha1"
-	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/build_go_proto"
-	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/common_go_proto"
-	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/grafeas_go_proto"
-	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/provenance_go_proto"
-	"github.com/rode/rode/protodeps/grafeas/proto/v1beta1/source_go_proto"
+	"github.com/rode/collector-image-scanner/scanner"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-const (
-	rodeProjectId             = "projects/rode"
-	collectorImageScannerNote = rodeProjectId + "/notes/new_collector_template"
-)
+var imageUriPattern = regexp.MustCompile("(?P<name>.+)(@sha256:)(?P<version>.+)")
 
 type collectorImageScannerServer struct {
-	logger *zap.Logger
-	rode   pb.RodeClient
+	logger  *zap.Logger
+	scanner scanner.ImageScanner
 }
 
-func NewcollectorImageScannerServer(logger *zap.Logger, rode pb.RodeClient) *collectorImageScannerServer {
+func NewCollectorImageScannerServer(logger *zap.Logger, scanner scanner.ImageScanner) *collectorImageScannerServer {
 	return &collectorImageScannerServer{
 		logger,
-		rode,
+		scanner,
 	}
 }
 
-func (s *collectorImageScannerServer) CreateEventOccurrence(ctx context.Context, request *v1alpha1.CreateEventOccurrenceRequest) (*v1alpha1.CreateEventOccurrenceResponse, error) {
-	log := s.logger.Named("CreateEventOccurrence")
-
-	log.Debug("received request", zap.Any("request", request))
-
-	o := &grafeas_go_proto.Occurrence{
-		Resource: &grafeas_go_proto.Resource{
-			Uri: "git://github.com/rode/rode@bca0e1b89be42a61131b6de09fd2836e7b00c252",
-		},
-		NoteName: collectorImageScannerNote,
-		Kind:     common_go_proto.NoteKind_BUILD,
-		Details: &grafeas_go_proto.Occurrence_Build{
-			Build: &build_go_proto.Details{
-				Provenance: &provenance_go_proto.BuildProvenance{
-					Id:         request.Name,
-					ProjectId:  rodeProjectId,
-					CreateTime: timestamppb.Now(),
-					SourceProvenance: &provenance_go_proto.Source{
-						Context: &source_go_proto.SourceContext{
-							Context: &source_go_proto.SourceContext_Git{
-								Git: &source_go_proto.GitSourceContext{
-									Url:        "github.com/rode/rode",
-									RevisionId: "bca0e1b89be42a61131b6de09fd2836e7b00c252",
-								}},
-						},
-					},
-				},
-			},
-		},
+func (s *collectorImageScannerServer) StartImageScan(ctx context.Context, request *v1alpha1.CreateImageScanRequest) (*emptypb.Empty, error) {
+	if !imageUriPattern.MatchString(request.ImageUri) {
+		return nil, status.Errorf(codes.InvalidArgument, "Invalid Image URI")
 	}
 
-	batchRequest := &pb.BatchCreateOccurrencesRequest{
-		Occurrences: []*grafeas_go_proto.Occurrence{o},
-	}
+	go s.scanner.ImageScan(request.ImageUri, ctx)
 
-	response, err := s.rode.BatchCreateOccurrences(ctx, batchRequest)
-	if err != nil {
-		log.Error("Error creating occurrence", zap.Error(err))
-		return nil, status.Errorf(codes.Internal, "Error creating occurrence: %s", err)
-	}
-
-	log.Info("Occurrence created")
-	return &v1alpha1.CreateEventOccurrenceResponse{
-		Id: response.Occurrences[0].Name,
-	}, nil
+	return &emptypb.Empty{}, nil
 }

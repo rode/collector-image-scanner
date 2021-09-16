@@ -16,6 +16,10 @@ fmt:
 license:
 	addlicense -c 'The Rode Authors' $(LICENSE_FILES)
 
+mocks:
+	go install github.com/maxbrunsfeld/counterfeiter/v6@v6.4.1
+	go generate ./...
+
 vet:
 	go vet ./...
 
