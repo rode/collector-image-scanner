@@ -40,12 +40,12 @@ func NewCollectorImageScannerServer(logger *zap.Logger, scanner scanner.ImageSca
 	}
 }
 
-func (s *collectorImageScannerServer) StartImageScan(_ context.Context, request *v1alpha1.CreateImageScanRequest) (*emptypb.Empty, error) {
+func (s *collectorImageScannerServer) StartImageScan(ctx context.Context, request *v1alpha1.CreateImageScanRequest) (*emptypb.Empty, error) {
 	if !imageUriPattern.MatchString(request.ImageUri) {
 		return nil, status.Errorf(codes.InvalidArgument, "Invalid Image URI")
 	}
 
-	go s.scanner.ImageScan(request.ImageUri)
+	go s.scanner.ImageScan(request.ImageUri, ctx)
 
 	return &emptypb.Empty{}, nil
 }

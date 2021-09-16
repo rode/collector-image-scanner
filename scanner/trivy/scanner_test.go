@@ -15,6 +15,7 @@
 package trivy_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -110,7 +111,8 @@ var _ = Describe("TrivyScanner", func() {
 			}
 			scanError = nil
 
-			for i := 0; i < fake.Number(2, 5); i++ {
+			iterations := fake.Number(2, 5)
+			for i := 0; i < iterations; i++ {
 				vulnerability := types.DetectedVulnerability{
 					VulnerabilityID: fake.Word(),
 				}
@@ -132,7 +134,8 @@ var _ = Describe("TrivyScanner", func() {
 			trivyCommand.ScanReturns(scanResults, scanError)
 
 			Expect(scanner.Init()).NotTo(HaveOccurred())
-			scanner.ImageScan(imageUri)
+			ctx := context.Background()
+			scanner.ImageScan(imageUri, ctx)
 		})
 
 		It("should create a note for the scan", func() {

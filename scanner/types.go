@@ -14,10 +14,12 @@
 
 package scanner
 
+import "context"
+
 //go:generate counterfeiter -generate
 
 //counterfeiter:generate . ImageScanner
 type ImageScanner interface {
-	ImageScan(string)
+	ImageScan(string, context.Context)
 	Init() error
 }

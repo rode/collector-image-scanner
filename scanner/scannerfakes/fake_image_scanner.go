@@ -2,6 +2,7 @@
 package scannerfakes
 
 import (
+	"context"
 	"sync"
 
 	"github.com/rode/collector-image-scanner/scanner"
@@ -27,7 +28,7 @@ type FakeImageScanner struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeImageScanner) ImageScan(arg1 string) {
+func (fake *FakeImageScanner) ImageScan(arg1 string, ctx context.Context) {
 	fake.imageScanMutex.Lock()
 	fake.imageScanArgsForCall = append(fake.imageScanArgsForCall, struct {
 		arg1 string
