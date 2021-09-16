@@ -15,7 +15,6 @@
 package trivy_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -134,8 +133,7 @@ var _ = Describe("TrivyScanner", func() {
 			trivyCommand.ScanReturns(scanResults, scanError)
 
 			Expect(scanner.Init()).NotTo(HaveOccurred())
-			ctx := context.Background()
-			scanner.ImageScan(imageUri, ctx)
+			scanner.ImageScan(imageUri)
 		})
 
 		It("should create a note for the scan", func() {
