@@ -26,7 +26,7 @@ import (
 var logger = zap.NewNop()
 var fake = gofakeit.New(0)
 
-func TestServer(t *testing.T) {
+func TestTrivyScanner(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "TrivyScanner Suite")
 }

@@ -31,6 +31,7 @@ FROM ghcr.io/aquasecurity/trivy:0.19.2 as trivy
 
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot as runner
+LABEL org.opencontainers.image.source=https://github.com/rode/collector-image-scanner
 WORKDIR /
 COPY --from=trivy /usr/local/bin/trivy /bin/
 COPY --from=builder /workspace/collector /bin/
