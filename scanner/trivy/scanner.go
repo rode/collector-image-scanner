@@ -57,7 +57,7 @@ func (t *trivyImageScanner) Init() error {
 	return nil
 }
 
-func (t *trivyImageScanner) ImageScan(imageUri string, ctx context.Context) {
+func (t *trivyImageScanner) ImageScan(imageUri string) {
 	log := t.logger.Named("ImageScan").With(zap.String("imageUri", imageUri))
 	log.Info("Starting scan")
 
@@ -68,6 +68,7 @@ func (t *trivyImageScanner) ImageScan(imageUri string, ctx context.Context) {
 	}
 	log.Debug("Scan completed", zap.Duration("scan", results.ScanEnd.Sub(results.ScanStart)))
 
+	ctx := context.Background()
 	noteName, err := t.createScanNote(ctx, imageUri)
 	if err != nil {
 		log.Error("Error creating scan note", zap.Error(err))
