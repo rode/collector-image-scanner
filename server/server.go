@@ -18,10 +18,12 @@ import (
 	"context"
 	"regexp"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"github.com/rode/collector-image-scanner/proto/v1alpha1"
 	"github.com/rode/collector-image-scanner/scanner"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -40,12 +42,21 @@ func NewCollectorImageScannerServer(logger *zap.Logger, scanner scanner.ImageSca
 	}
 }
 
-func (s *collectorImageScannerServer) StartImageScan(_ context.Context, request *v1alpha1.CreateImageScanRequest) (*emptypb.Empty, error) {
+func (s *collectorImageScannerServer) StartImageScan(ctx context.Context, request *v1alpha1.CreateImageScanRequest) (*emptypb.Empty, error) {
 	if !imageUriPattern.MatchString(request.ImageUri) {
 		return nil, status.Errorf(codes.InvalidArgument, "Invalid Image URI")
 	}
-
-	go s.scanner.ImageScan(request.ImageUri)
+	go s.scanner.ImageScan(extractAuthz(ctx), request.ImageUri)
 
 	return &emptypb.Empty{}, nil
+}
+
+func extractAuthz(ctx context.Context) context.Context {
+	authzHeader := metautils.ExtractIncoming(ctx).Get("authorization")
+	meta := metadata.New(map[string]string{})
+	if authzHeader != "" {
+		meta.Set("authorization", authzHeader)
+	}
+
+	return metautils.NiceMD(meta).ToIncoming(context.Background())
 }
