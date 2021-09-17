@@ -16,11 +16,13 @@ package server
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"runtime"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"github.com/rode/collector-image-scanner/proto/v1alpha1"
 	"github.com/rode/collector-image-scanner/scanner/scannerfakes"
@@ -46,7 +48,7 @@ var _ = Describe("Server", func() {
 
 		BeforeEach(func() {
 			ctx = context.Background()
-			imageUri = fmt.Sprintf("%s@sha256:%s", fake.Word(), fake.LetterN(64))
+			imageUri = randomImageUri()
 			request = &v1alpha1.CreateImageScanRequest{
 				ImageUri: imageUri,
 			}
@@ -113,5 +115,26 @@ var _ = Describe("Server", func() {
 				Expect(status.Code()).To(Equal(codes.InvalidArgument))
 			})
 		})
+
+		DescribeTable("valid image URIs", func(imageUri string) {
+			request.ImageUri = imageUri
+
+			_, scanError := server.StartImageScan(ctx, request)
+			Expect(scanError).NotTo(HaveOccurred())
+		},
+			Entry("Docker registry image", "sonarqube@sha256:452e87fe1f932a920bb9546ce0ad148f897565e752fe342058489214b0275c1b"),
+			Entry("Docker registry namespaced image", "curlimages/curl@sha256:6e0a786e3e5181df00eaf3a0a1749c18a6bb20b01c9bd192ea72176ce8a1c94b"),
+			Entry("Azure Container Registry", "example.azurecr.io/app@sha256:967530243b7964106737d162105dc5ac53bf610c1c8934a7e5022aec7346307e"),
+			Entry("Microsoft Container Registry", "mcr.microsoft.com/azure-cli@sha256:2090963629cc9c595bbad24354bb6879112d895bcb2dcd29c604209e30395669"),
+			Entry("GitHub Container Registry", "ghcr.io/rode/ui@sha256:a4042b54517a3d36b101fe304435f2ee414bf1dfc0cf0486caa462f4a018ef18"),
+		)
 	})
 })
+
+func randomImageUri() string {
+	digestBytes := make([]byte, 32)
+	fake.Rand.Read(digestBytes)
+	digest := hex.EncodeToString(digestBytes)
+
+	return fmt.Sprintf("%s@sha256:%s", fake.Word(), digest)
+}
