@@ -19,11 +19,13 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rode/collector-image-scanner/proto/v1alpha1"
 	"github.com/rode/collector-image-scanner/scanner/scannerfakes"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -60,12 +62,38 @@ var _ = Describe("Server", func() {
 		When("the image is valid", func() {
 			It("should initiate a scan in the background", func() {
 				Expect(scanner.ImageScanCallCount()).To(Equal(1))
-				Expect(scanner.ImageScanArgsForCall(0)).To(Equal(imageUri))
+
+				actualCtx, actualUri := scanner.ImageScanArgsForCall(0)
+				actualAuthz := metautils.ExtractIncoming(actualCtx).Get("authorization")
+
+				Expect(actualUri).To(Equal(imageUri))
+				Expect(actualAuthz).To(BeEmpty())
 			})
 
 			It("should not return an error", func() {
 				Expect(actualEmpty).To(Equal(&emptypb.Empty{}))
 				Expect(actualError).NotTo(HaveOccurred())
+			})
+		})
+
+		When("the incoming context has an authorization header", func() {
+			var expectedAuthorization string
+
+			BeforeEach(func() {
+				expectedAuthorization = fake.Word()
+				meta := metadata.New(map[string]string{
+					"authorization": expectedAuthorization,
+				})
+				ctx = metautils.NiceMD(meta).ToIncoming(ctx)
+			})
+
+			It("should pass the authorization header along", func() {
+				Expect(scanner.ImageScanCallCount()).To(Equal(1))
+
+				actualCtx, _ := scanner.ImageScanArgsForCall(0)
+				actualAuthz := metautils.ExtractIncoming(actualCtx).Get("authorization")
+
+				Expect(actualAuthz).To(Equal(expectedAuthorization))
 			})
 		})
 

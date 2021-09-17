@@ -2,16 +2,18 @@
 package scannerfakes
 
 import (
+	"context"
 	"sync"
 
 	"github.com/rode/collector-image-scanner/scanner"
 )
 
 type FakeImageScanner struct {
-	ImageScanStub        func(string)
+	ImageScanStub        func(context.Context, string)
 	imageScanMutex       sync.RWMutex
 	imageScanArgsForCall []struct {
-		arg1 string
+		arg1 context.Context
+		arg2 string
 	}
 	InitStub        func() error
 	initMutex       sync.RWMutex
@@ -27,16 +29,17 @@ type FakeImageScanner struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeImageScanner) ImageScan(arg1 string) {
+func (fake *FakeImageScanner) ImageScan(arg1 context.Context, arg2 string) {
 	fake.imageScanMutex.Lock()
 	fake.imageScanArgsForCall = append(fake.imageScanArgsForCall, struct {
-		arg1 string
-	}{arg1})
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
 	stub := fake.ImageScanStub
-	fake.recordInvocation("ImageScan", []interface{}{arg1})
+	fake.recordInvocation("ImageScan", []interface{}{arg1, arg2})
 	fake.imageScanMutex.Unlock()
 	if stub != nil {
-		fake.ImageScanStub(arg1)
+		fake.ImageScanStub(arg1, arg2)
 	}
 }
 
@@ -46,17 +49,17 @@ func (fake *FakeImageScanner) ImageScanCallCount() int {
 	return len(fake.imageScanArgsForCall)
 }
 
-func (fake *FakeImageScanner) ImageScanCalls(stub func(string)) {
+func (fake *FakeImageScanner) ImageScanCalls(stub func(context.Context, string)) {
 	fake.imageScanMutex.Lock()
 	defer fake.imageScanMutex.Unlock()
 	fake.ImageScanStub = stub
 }
 
-func (fake *FakeImageScanner) ImageScanArgsForCall(i int) string {
+func (fake *FakeImageScanner) ImageScanArgsForCall(i int) (context.Context, string) {
 	fake.imageScanMutex.RLock()
 	defer fake.imageScanMutex.RUnlock()
 	argsForCall := fake.imageScanArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeImageScanner) Init() error {
