@@ -28,7 +28,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var imageUriPattern = regexp.MustCompile("[[:alnum:]/_.\\-]+@sha256:[[:xdigit:]]{64}")
+var imageUriPattern = regexp.MustCompile("^[[:alnum:]/_.\\-]+@sha256:[[:xdigit:]]{64}$")
 
 type collectorImageScannerServer struct {
 	logger  *zap.Logger

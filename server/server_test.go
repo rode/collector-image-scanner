@@ -127,6 +127,8 @@ var _ = Describe("Server", func() {
 			Entry("Azure Container Registry", "example.azurecr.io/app@sha256:967530243b7964106737d162105dc5ac53bf610c1c8934a7e5022aec7346307e"),
 			Entry("Microsoft Container Registry", "mcr.microsoft.com/azure-cli@sha256:2090963629cc9c595bbad24354bb6879112d895bcb2dcd29c604209e30395669"),
 			Entry("GitHub Container Registry", "ghcr.io/rode/ui@sha256:a4042b54517a3d36b101fe304435f2ee414bf1dfc0cf0486caa462f4a018ef18"),
+			Entry("Hyphenated image name", "ghcr.io/rode/collector-image-scanner@sha256:6ca724440365a72b2cb66f3049cdd1545d395f728c9efe865ebfcc5403cb2ace"),
+			Entry("Underscores in image name", "ghcr.io/rode/collector_image_scanner@sha256:6ca724440365a72b2cb66f3049cdd1545d395f728c9efe865ebfcc5403cb2ace"),
 		)
 	})
 })
