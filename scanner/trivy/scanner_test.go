@@ -108,6 +108,7 @@ var _ = Describe("TrivyScanner", func() {
 			imageUri = fake.Word()
 			scanResults = &trivy.ScanOutput{
 				Report: &report.Report{},
+				ScanStatus: trivy.ScanningCompleted,
 			}
 			scanError = nil
 
@@ -210,11 +211,18 @@ var _ = Describe("TrivyScanner", func() {
 		When("an error occurs during the scan", func() {
 			BeforeEach(func() {
 				scanError = errors.New("scan error")
+				scanResults.ScanStatus = trivy.ScanningFailed
 			})
 
-			It("should not create any resources in Rode", func() {
-				Expect(rode.CreateNoteCallCount()).To(Equal(0))
-				Expect(rode.BatchCreateOccurrencesCallCount()).To(Equal(0))
+			It("should create a note and discovery occurrences, but no vulnerability occurrences in Rode", func() {
+				Expect(rode.CreateNoteCallCount()).To(Equal(1))
+				Expect(rode.BatchCreateOccurrencesCallCount()).To(Equal(1))
+
+				_, actualRequest, _ := rode.BatchCreateOccurrencesArgsForCall(0)
+
+				for _, occurrence := range actualRequest.Occurrences {
+					Expect(occurrence.Kind).To(Equal(common_go_proto.NoteKind_DISCOVERY))
+				}
 			})
 		})
 
