@@ -220,8 +220,14 @@ var _ = Describe("TrivyScanner", func() {
 
 				_, actualRequest, _ := rode.BatchCreateOccurrencesArgsForCall(0)
 
-				for _, occurrence := range actualRequest.Occurrences {
-					Expect(occurrence.Kind).To(Equal(common_go_proto.NoteKind_DISCOVERY))
+				for i, actualOccurrence := range actualRequest.Occurrences {
+					expectedStatus := discovery_go_proto.Discovered_SCANNING
+					if i == 1 {
+						expectedStatus = discovery_go_proto.Discovered_FINISHED_FAILED
+					}
+
+					Expect(actualOccurrence.Kind).To(Equal(common_go_proto.NoteKind_DISCOVERY))
+					Expect(actualOccurrence.GetDiscovered().Discovered.AnalysisStatus).To(Equal(expectedStatus))
 				}
 			})
 		})
