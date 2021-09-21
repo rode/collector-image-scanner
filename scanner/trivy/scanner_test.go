@@ -107,7 +107,7 @@ var _ = Describe("TrivyScanner", func() {
 
 			imageUri = fake.Word()
 			scanResults = &trivy.ScanOutput{
-				Report: &report.Report{},
+				Report:     &report.Report{},
 				ScanStatus: trivy.ScanningCompleted,
 			}
 			scanError = nil
