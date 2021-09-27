@@ -64,7 +64,6 @@ func (t *trivyImageScanner) ImageScan(ctx context.Context, imageUri string) {
 	results, err := t.trivy.Scan(imageUri)
 	if err != nil {
 		log.Error("Error scanning image", zap.Error(err))
-		return
 	}
 	log.Info("Scan completed", zap.Duration("scan", results.ScanEnd.Sub(results.ScanStart)))
 	noteName, err := t.createScanNote(ctx, imageUri)
@@ -74,8 +73,10 @@ func (t *trivyImageScanner) ImageScan(ctx context.Context, imageUri string) {
 	}
 	log.Info("Created scan note", zap.String("noteName", noteName))
 	discoveryOccurrences := t.createDiscoveryOccurrences(noteName, imageUri, results)
-	vulnerabilityOccurrences := t.createVulnerabilityOccurrences(noteName, imageUri, results)
-
+	var vulnerabilityOccurrences []*grafeas_go_proto.Occurrence
+	if results.ScanStatus == ScanningCompleted {
+		vulnerabilityOccurrences = t.createVulnerabilityOccurrences(noteName, imageUri, results)
+	}
 	_, err = t.rode.BatchCreateOccurrences(ctx, &rode.BatchCreateOccurrencesRequest{
 		Occurrences: append(discoveryOccurrences, vulnerabilityOccurrences...),
 	})
@@ -120,6 +121,10 @@ func (t *trivyImageScanner) createScanNote(ctx context.Context, imageUri string)
 }
 
 func (t *trivyImageScanner) createDiscoveryOccurrences(noteName, imageUri string, results *ScanOutput) []*grafeas_go_proto.Occurrence {
+	status := discovery_go_proto.Discovered_FINISHED_SUCCESS
+	if results.ScanStatus == ScanningFailed {
+		status = discovery_go_proto.Discovered_FINISHED_FAILED
+	}
 	return []*grafeas_go_proto.Occurrence{
 		{
 			Resource: &grafeas_go_proto.Resource{
@@ -147,7 +152,7 @@ func (t *trivyImageScanner) createDiscoveryOccurrences(noteName, imageUri string
 				Discovered: &discovery_go_proto.Details{
 					Discovered: &discovery_go_proto.Discovered{
 						ContinuousAnalysis: discovery_go_proto.Discovered_CONTINUOUS_ANALYSIS_UNSPECIFIED,
-						AnalysisStatus:     discovery_go_proto.Discovered_FINISHED_SUCCESS,
+						AnalysisStatus:     status,
 					}},
 			},
 		},

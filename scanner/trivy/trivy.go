@@ -44,10 +44,18 @@ type cmdOutput struct {
 	stdErr bytes.Buffer
 }
 
+type ScanStatus string
+
+const (
+	ScanningFailed    ScanStatus = "ScanningFailed"
+	ScanningCompleted ScanStatus = "ScanningCompleted"
+)
+
 type ScanOutput struct {
-	Report    *report.Report
-	ScanStart time.Time
-	ScanEnd   time.Time
+	Report     *report.Report
+	ScanStart  time.Time
+	ScanEnd    time.Time
+	ScanStatus ScanStatus
 }
 
 func NewTrivyCommandWrapper() CommandWrapper {
@@ -69,18 +77,21 @@ func (t *trivyCommand) Version() (*Version, error) {
 
 func (t *trivyCommand) Scan(imageUri string) (*ScanOutput, error) {
 	scanResult := &ScanOutput{}
+	scanResult.ScanStatus = ScanningCompleted
 
 	scanResult.ScanStart = time.Now()
 	output, err := t.runCmd("--quiet", "client", "--format", "json", imageUri)
 	scanResult.ScanEnd = time.Now()
 
 	if err != nil {
-		return nil, fmt.Errorf("error running image scan: %v", err)
+		scanResult.ScanStatus = ScanningFailed
+		return scanResult, fmt.Errorf("error running image scan: %v", err)
 	}
 
 	var scanReport report.Report
 	if err = json.Unmarshal(output.stdOut.Bytes(), &scanReport); err != nil {
-		return nil, fmt.Errorf("error unmarshalling report: %v", err)
+		scanResult.ScanStatus = ScanningFailed
+		return scanResult, fmt.Errorf("error unmarshalling report: %v", err)
 	}
 	scanResult.Report = &scanReport
 
